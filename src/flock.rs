@@ -115,7 +115,12 @@ impl Filesystem {
                 )?;
             }
             State::Shared => {
-                acquire(msg, &path, &|| f.try_lock_shared(), &|| f.lock_shared())?;
+                acquire(msg, &path, &|| {
+                    match f.try_lock_shared() {
+                        Ok(_) => Ok(()),
+                        Err(err) => Err(err)
+                    }
+                } , &|| f.lock_shared())?;
             }
         }
 
